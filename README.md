@@ -1,7 +1,5 @@
 # Kafka Practice Repo
 
-# Getting Started
-
 ## Installing and Running Kafka + Zookeeper (Mac)
 
 1. Install kafka - If on mac I reocmmend using homebrew:
@@ -44,4 +42,30 @@ or with more handling
 `$ ~/usr/local/bin/kafka-topics --bootstrap-server 127.0.0.1:9092 --topic second_topic --create --partitions 3 --replication-factor 1`
 
 Should see an output similar to this:
-`> Created topic second_topic.`
+`Created topic second_topic.`
+
+`./kafka-console-consumer --bootstrap-server 127.0.0.1:9092 --topic first_topic --from-beginning`
+
+## Produce Messages to Topic
+
+`./kafka-console-producer --bootstrap-server 127.0.0.1:9092 --topic first_topic`
+
+Submit text messages like below
+
+```
+> First Message
+> Second Message
+> Third Message
+```
+
+Then cancel out of the cli.
+
+## Consume Messages from a topic
+
+`./kafka-console-consumer --bootstrap-server 127.0.0.1:9092 --topic first_topic --from-beginning`
+
+```
+First Message
+Second Message
+Third Message
+```
