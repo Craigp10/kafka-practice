@@ -1,6 +1,6 @@
 # Kafka Practice Repo
 
-## Installing and Running Kafka + Zookeeper (Mac)
+## Installing and Running Kafka + Zookeeper locally (Mac)
 
 1. Install kafka - If on mac I reocmmend using homebrew:
    `$ brew install kafka`
@@ -69,3 +69,25 @@ First Message
 Second Message
 Third Message
 ```
+
+## Installing and Running Kafka + Zookeeper within a Container (Docker)
+
+1. Ensure Docker is installed and running. To download see [here](https://docs.docker.com/get-docker/). Confirm that docker is running before continuing
+
+2. Copy the `docker-compose.yml` file found within this project and run `docker-compose up -d`. This will run docker compose to create 2 containers, 1 for kafka and 1 for zooker, install kafka and zookeer within the containers and run the containers.
+
+3. Confirm the containers were successfully created by running `docker ps`. There should be two containers logs that look like below:
+
+```
+6ba38109e236   wurstmeister/kafka:latest   "start-kafka.sh"         12 minutes ago   Up 12 minutes   0.0.0.0:9092->9092/tcp  kafka
+8a5f9ce02046   zookeeper:latest            "/docker-entrypoint.…"   17 minutes ago   Up 17 minutes   2888/tcp, 3888/tcp, 0.0.0.0:2181->2181/tcp, 8080/tcp  zookeeper
+```
+
+4. Enter a shell within the kafka container. Execute `docker exec -it kafka /bin/bash` in a new shell window
+
+   Change directories into the directory that contains the kafka scripts and binaries, which can be found here `/opt/kafka/bin`.
+
+   Execute the new commands to create a topic, to produce messages to the topic, and to consume the topic.
+   `kafka-topics.sh --bootstrap-server 127.0.0.1:9092 --topic first_topic --create`
+   `kafka-console-producer.sh --bootstrap-server 127.0.0.1:9092 --topic first_topic`
+   `kafka-console-consumer.sh --bootstrap-server 127.0.0.1:9092 --topic first_topic`
