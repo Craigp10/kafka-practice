@@ -10,18 +10,31 @@ import (
 
 func main() {
 	fmt.Println("Running kafka")
-	producer()
-	consumer()
-
+	p := producer()
+	defer p.Close()
+	go consumer()
+	fmt.Println("producing more")
+	i := 1
+	topic := "myTopic"
+	for {
+		fmt.Println("Delivering message", i)
+		p.Produce(&kafka.Message{
+			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
+			Value:          []byte(fmt.Sprintf("additional topic message %d", i)),
+		}, nil)
+		time.Sleep(2 * time.Second)
+		i++
+	}
 }
 
-func producer() {
+func producer() *kafka.Producer {
 	p, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": "localhost"})
 	if err != nil {
 		panic(err)
 	}
 
-	defer p.Close()
+	// No longer close within the producer() routine, the producer will be closed with the main routine closes.
+	// defer p.Close()
 	go func() {
 		for e := range p.Events() {
 			switch ev := e.(type) {
@@ -45,7 +58,8 @@ func producer() {
 	}
 
 	// Wait for message deliveries before shutting down
-	p.Flush(15 * 1000)
+	// p.Flush(15 * 1000)
+	return p
 }
 
 func consumer() {
@@ -74,12 +88,13 @@ func consumer() {
 			// Timeout is not considered an error because it is raised by
 			// ReadMessage in absence of messages.
 			fmt.Printf("Consumer error: %v (%v)\n", err, msg)
-		} else {
-			// Needs further looking into to understand how to properly handle errors like timeout for kafka consumers.
-			fmt.Printf("time out: %v (%v)\n", err, msg)
-			//  e := kafka.NewError(err.(kafka.Error).Code(), err.(kafka.Error).String(), err.(kafka.Error).IsFatal())
-			// 	run = false
 		}
+		// else {
+		// 	// Needs further looking into to understand how to properly handle errors like timeout for kafka consumers.
+		// 	fmt.Printf("time out: %v (%v)\n", err, msg)
+		// 	//  e := kafka.NewError(err.(kafka.Error).Code(), err.(kafka.Error).String(), err.(kafka.Error).IsFatal())
+		// 	run = false
+		// }
 	}
 
 	c.Close()

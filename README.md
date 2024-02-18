@@ -1,6 +1,6 @@
 # Kafka Practice Repo
 
-## Installing and Running Kafka + Zookeeper locally (Mac)
+### Installing and Running Kafka + Zookeeper locally (Mac)
 
 1. Install kafka - If on mac I reocmmend using homebrew:
    `$ brew install kafka`
@@ -30,6 +30,8 @@
    `brew services start kafka`
    \*Note that special configs aren't as straight forward with this approach.
 
+## Interact with Kafka by CLI
+
 ### Create a Kafka Topic
 
 change directories, where the kafka binarys are installed. On mac that is typically here:
@@ -37,62 +39,119 @@ change directories, where the kafka binarys are installed. On mac that is typica
 
 ## Create Topics
 
-`$ ./kafka-topics --bootstrap-server 127.0.0.1:9092 --topic first_topic --create`
+```
+./kafka-topics --bootstrap-server 127.0.0.1:9092 --topic first_topic --create
+```
+
 or with more handling
-`$ ~/usr/local/bin/kafka-topics --bootstrap-server 127.0.0.1:9092 --topic second_topic --create --partitions 3 --replication-factor 1`
+
+```
+~/usr/local/bin/kafka-topics --bootstrap-server 127.0.0.1:9092 --topic second_topic --create --partitions 3 --replication-factor 1
+```
 
 Should see an output similar to this:
 `Created topic second_topic.`
 
-`./kafka-console-consumer --bootstrap-server 127.0.0.1:9092 --topic first_topic --from-beginning`
+```
+./kafka-console-consumer --bootstrap-server 127.0.0.1:9092 --topic first_topic --from-beginning
+```
 
 ## Produce Messages to Topic
 
-`./kafka-console-producer --bootstrap-server 127.0.0.1:9092 --topic first_topic`
+```
+./kafka-console-producer --bootstrap-server 127.0.0.1:9092 --topic first_topic
+```
 
 Submit text messages like below
 
-```
-> First Message
-> Second Message
-> Third Message
-```
+`> First Message`
+`> Second Message`
+`> Third Message`
 
 Then cancel out of the cli.
 
 ## Consume Messages from a topic
 
-`./kafka-console-consumer --bootstrap-server 127.0.0.1:9092 --topic first_topic --from-beginning`
-
 ```
-First Message
-Second Message
-Third Message
+./kafka-console-consumer --bootstrap-server 127.0.0.1:9092 --topic first_topic --from-beginning
 ```
 
-## Installing and Running Kafka + Zookeeper within a Container (Docker)
+`First Message`
+`Second Message`
+`Third Message`
+
+## Interact with Kafka + Zookeeper within a Container (Docker)
 
 1. Ensure Docker is installed and running. To download see [here](https://docs.docker.com/get-docker/). Confirm that docker is running before continuing
 
-2. Copy the `docker-compose.yml` file found within this project and run `docker-compose up -d`. This will run docker compose to create 2 containers, 1 for kafka and 1 for zooker, install kafka and zookeer within the containers and run the containers.
+2. Execute `docker-compose up -d` within the root directory of this application. This command will run docker-compose to create 2 containers, 1 running kafka and 1 running zookeeper.
 
-3. Confirm the containers were successfully created by running `docker ps`. There should be two containers logs that look like below:
+3. Confirm the containers were successfully created by running `docker ps`. There should be two containers logs that look similar to the output below:
 
 ```
 6ba38109e236   wurstmeister/kafka:latest   "start-kafka.sh"         12 minutes ago   Up 12 minutes   0.0.0.0:9092->9092/tcp  kafka
 8a5f9ce02046   zookeeper:latest            "/docker-entrypoint.…"   17 minutes ago   Up 17 minutes   2888/tcp, 3888/tcp, 0.0.0.0:2181->2181/tcp, 8080/tcp  zookeeper
 ```
 
-4. Enter a shell within the kafka container. Execute `docker exec -it kafka /bin/bash` in a new shell window
+4. Enter the bash shell within the kafka container by executing
 
-   Change directories into the directory that contains the kafka scripts and binaries, which can be found here `/opt/kafka/bin`.
+```
+docker exec -it kafka /bin/bash
+```
 
-   Execute the new commands to create a topic, to produce messages to the topic, and to consume the topic.
-   `kafka-topics.sh --bootstrap-server 127.0.0.1:9092 --topic first_topic --create`
-   `kafka-console-producer.sh --bootstrap-server 127.0.0.1:9092 --topic first_topic`
-   `kafka-console-consumer.sh --bootstrap-server 127.0.0.1:9092 --topic first_topic`
+Change directories into the directory that contains the kafka scripts and binaries. The file path is `/opt/kafka/bin`.
+
+Execute the new commands to create a topic, to produce messages to the topic, and to consume the topic.
+`./kafka-topics.sh --bootstrap-server 127.0.0.1:9092 --topic first_topic --create`
+`./kafka-console-producer.sh --bootstrap-server 127.0.0.1:9092 --topic first_topic`
+`./kafka-console-consumer.sh --bootstrap-server 127.0.0.1:9092 --topic first_topic`
 
 Exit bash shell with `Ctrl + D`
 
 5. Tear down containers with `docker-compose down`
-   The rest of the program is following the <b>Apache Kafka Essential Training: Getting Started for Kafka</b>
+
+## Interact with Kafka via Go + Docker
+
+1. Ensure Docker is installed and running. To download see [here](https://docs.docker.com/get-docker/). Confirm that docker is running before continuing.
+
+2. Execute `docker-compose up -d` within the root directory of this application. This command will run docker-compose to create 2 containers, 1 running kafka and 1 running zookeeper.
+
+3. Confirm the containers were successfully created by running `docker ps`. There should be two containers logs that look similar to the output below:
+
+```
+6ba38109e236   wurstmeister/kafka:latest   "start-kafka.sh"         12 minutes ago   Up 12 minutes   0.0.0.0:9092->9092/tcp  kafka
+8a5f9ce02046   zookeeper:latest            "/docker-entrypoint.…"   17 minutes ago   Up 17 minutes   2888/tcp, 3888/tcp, 0.0.0.0:2181->2181/tcp, 8080/tcp  zookeeper
+```
+
+4. Run the go program, first compile the program into a binary and then execute the binary by executing the follow commands.
+
+```
+go build .
+./kafka-practice
+```
+
+The Go program connects to the running kafka instance, initializes a producer and consumer, creates a topic, and submit messages to that topic. In the command line, message producing/consuming will be logged to show the output of each step. The program should remain running and will continue to push a message from the producer to the topic every second.
+
+In the go program, the consumer is ran on a separate go routine, so that in theory our program will mimic a consumer consuming topic messages as the produces publishes them. In Step 5, we'll see it in action!
+
+5. In a new window, enter a bash shell within the kafka docker container by executing
+
+```
+docker exec -it kafka /bin/bash
+```
+
+change directories to the kafka binaries by executing, found in the file path here `/opt/kafka/bin/`
+
+Consume the messages, starting from the beginning by executing...
+
+```
+./kafka-console-consumer.sh --bootstrap-server 127.0.0.1:9092 --topic myTopic --from-beginning
+```
+
+Now as new messages are published from the go program, this consumer will output those messages when they are logged. Exit the consumer script with `Ctrl + C` and the container with `Ctrl + D`. End the go program with `Ctrl + C`.
+
+6. Tear down the docker containers with
+
+```
+docker-compose down
+```
