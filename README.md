@@ -91,3 +91,8 @@ Third Message
    `kafka-topics.sh --bootstrap-server 127.0.0.1:9092 --topic first_topic --create`
    `kafka-console-producer.sh --bootstrap-server 127.0.0.1:9092 --topic first_topic`
    `kafka-console-consumer.sh --bootstrap-server 127.0.0.1:9092 --topic first_topic`
+
+Exit bash shell with `Ctrl + D`
+
+5. Tear down containers with `docker-compose down`
+   The rest of the program is following the <b>Apache Kafka Essential Training: Getting Started for Kafka</b>
