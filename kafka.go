@@ -13,7 +13,9 @@ func main() {
 	p := producer()
 	defer p.Close()
 	go consumer()
-	fmt.Println("producing more")
+
+	fmt.Println("producing more, wait for 5 secords for consumer to receive inital messages")
+	time.Sleep(5 * time.Second)
 	i := 1
 	topic := "myTopic"
 	for {
@@ -73,7 +75,7 @@ func consumer() {
 		panic(err)
 	}
 
-	c.SubscribeTopics([]string{"myTopic", "^aRegex.*[Tt]opic"}, nil)
+	c.SubscribeTopics([]string{"myTopic"}, nil)
 
 	// A signal handler or similar could be used to set this to false to break the loop.
 	run := true
